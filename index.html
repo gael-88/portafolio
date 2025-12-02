@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portafolio 3D | Aless Dev</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <style>
+        /* Fondo oscuro suave */
+        body { background-color: #0f172a; color: #e2e8f0; overflow-x: hidden; }
+        
+        #canvas-container { 
+            width: 100%; height: 50vh; 
+            position: relative; 
+            cursor: grab; 
+        }
+        
+        @media (min-width: 768px) {
+            #canvas-container { 
+                height: 100vh; 
+                position: fixed; 
+                top: 0; right: 0; 
+                width: 50%; 
+                z-index: 0; 
+            }
+            #content-container { width: 50%; }
+        }
+        
+        .glass-panel { 
+            background: rgba(30, 41, 59, 0.7); 
+            backdrop-filter: blur(10px); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+        }
+        
+        #loader {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0f172a; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 20; transition: opacity 0.5s;
+        }
+        .spinner { border: 4px solid rgba(255,255,255,0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #3b82f6; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="font-sans antialiased">
+
+    <!-- VIDEO DE FONDO -->
+    <video id="monitor-video" loop muted playsinline preload="auto" crossOrigin="anonymous" style="display:none">
+        <source src="./assets/video.mp4" type="video/mp4">
+        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+    </video>
+
+    <!-- PANTALLA DE CARGA -->
+    <div id="loader">
+        <div id="loading-spinner" class="spinner mb-4"></div>
+        <p id="loading-text" class="text-blue-400 font-bold mb-4">Cargando Setup...</p>
+        <button id="start-btn" class="hidden px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-full shadow-lg transition transform hover:scale-105 flex items-center gap-2">
+            <i data-lucide="play"></i> INICIAR EXPERIENCIA
+        </button>
+    </div>
+
+    <div class="flex flex-col md:flex-row min-h-screen">
+        <div id="content-container" class="w-full relative z-10 p-6 md:p-12 flex flex-col gap-12 bg-slate-900/80 md:bg-transparent">
+            
+            <!-- HEADER LIMPIO (Sin botones) -->
+            <header class="flex justify-between items-center">
+                <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">ALEX.DEV</h1>
+            </header>
+
+            <section class="mt-10">
+                <h2 class="text-5xl font-extrabold mb-4">Hola, soy <span class="text-blue-400">Aless</span></h2>
+                <p class="text-xl text-slate-400 leading-relaxed">
+                    Un simple chaval de yucatan. <br>
+                    Dale al botón "Iniciar" para encender mi monitor.
+                </p>
+                <div class="mt-6 flex gap-4">
+                    <a href="#projects" class="px-6 py-3 bg-white text-slate-900 font-bold rounded-lg hover:bg-slate-200 transition">Ver Proyectos</a>
+                    <a href="#contact" class="px-6 py-3 border border-slate-600 rounded-lg hover:bg-slate-800 transition">Contacto</a>
+                </div>
+            </section>
+
+            <section class="glass-panel p-6 rounded-2xl">
+                <h3 class="text-2xl font-bold mb-4 flex items-center gap-2"><i data-lucide="cpu"></i> Tech Stack</h3>
+                <div class="flex gap-3 flex-wrap">
+                    <span class="px-3 py-1 bg-slate-800 rounded text-blue-300 border border-blue-900">Blender</span>
+                    <span class="px-3 py-1 bg-slate-800 rounded text-yellow-300 border border-yellow-900">JavaScript</span>
+                    <span class="px-3 py-1 bg-slate-800 rounded text-green-300 border border-green-900">Three.js</span>
+                    <span class="px-3 py-1 bg-slate-800 rounded text-cyan-300 border border-cyan-900">Tailwind</span>
+                </div>
+            </section>
+        </div>
+
+        <div id="canvas-container"></div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+        // --- 1. CONFIGURACIÓN DE LA ESCENA ---
+        const container = document.getElementById('canvas-container');
+        const loaderDiv = document.getElementById('loader');
+        const startBtn = document.getElementById('start-btn');
+        const spinner = document.getElementById('loading-spinner');
+        const loadingText = document.getElementById('loading-text');
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0f172a); // Color base
+        scene.fog = new THREE.Fog(0x0f172a, 10, 50);
+
+        const camera = new THREE.PerspectiveCamera(45, container.offsetWidth / container.offsetHeight, 0.1, 1000);
+        camera.position.set(6, 4, 8); 
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(container.offsetWidth, container.offsetHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        container.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 3;
+        controls.maxDistance = 15;
+        controls.maxPolarAngle = Math.PI / 2;
+
+        // --- 2. VIDEO TEXTURE ---
+        const video = document.getElementById('monitor-video');
+        
+        video.addEventListener('loadedmetadata', () => { console.log("Video listo"); });
+        video.addEventListener('error', (e) => { console.error("Error video:", video.error); });
+
+        const videoTexture = new THREE.VideoTexture(video);
+        videoTexture.minFilter = THREE.LinearFilter;
+        videoTexture.magFilter = THREE.LinearFilter;
+        videoTexture.format = THREE.RGBAFormat;
+        videoTexture.flipY = false;
+
+        const videoMaterial = new THREE.MeshBasicMaterial({ 
+            map: videoTexture,
+            side: THREE.FrontSide,
+            toneMapped: false
+        });
+
+        // --- 3. ILUMINACIÓN ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+        scene.add(ambientLight);
+
+        const mainLight = new THREE.DirectionalLight(0xffffff, 1);
+        mainLight.position.set(5, 10, 5);
+        mainLight.castShadow = true;
+        mainLight.shadow.mapSize.width = 1024;
+        mainLight.shadow.mapSize.height = 1024;
+        scene.add(mainLight);
+
+        // Luz de Neón (Cian, fija)
+        const neonLight = new THREE.PointLight(0x00ffff, 5, 10);
+        neonLight.position.set(0, 1, 0);
+        scene.add(neonLight);
+
+        // Luz de pantalla (Azul suave)
+        const screenLight = new THREE.RectAreaLight(0x4c8bf5, 5, 2, 1);
+        screenLight.position.set(0, 1.5, 0.5);
+        screenLight.lookAt(0, 1.5, 2);
+        scene.add(screenLight);
+
+       // --- 4. CARGAR MODELO (Con Fallback Seguro) ---
+        const loader = new GLTFLoader();
+        let model = null;
+
+        function onSceneLoaded() {
+            spinner.style.display = 'none';
+            loadingText.style.display = 'none';
+            startBtn.classList.remove('hidden');
+        }
+
+        function loadFallbackScene() {
+            console.log("Cargando escena de respaldo...");
+            loadingText.innerText = "Modo Demo (Modelo no encontrado)";
+            loadingText.style.color = "#fbbf24";
+            
+            // Crear escritorio básico
+            const deskGeo = new THREE.BoxGeometry(3, 0.1, 1.5);
+            const deskMat = new THREE.MeshStandardMaterial({ color: 0x1e293b });
+            const desk = new THREE.Mesh(deskGeo, deskMat);
+            desk.position.y = 0;
+            desk.castShadow = true;
+            desk.receiveShadow = true;
+            scene.add(desk);
+
+            // Crear monitor básico
+            const screenGeo = new THREE.PlaneGeometry(1.6, 0.9);
+            const screen = new THREE.Mesh(screenGeo, videoMaterial);
+            screen.position.set(0, 0.6, -0.2);
+            scene.add(screen);
+
+            onSceneLoaded();
+        }
+
+        startBtn.addEventListener('click', () => {
+            video.play().catch(e => console.error("Error play:", e));
+            loaderDiv.style.opacity = '0';
+            setTimeout(() => loaderDiv.style.display = 'none', 500);
+        });
+
+        // Intentar cargar modelo con manejo de errores
+        try {
+            loader.load('assets/setup.glb', 
+                (gltf) => {
+                    model = gltf.scene;
+                    
+                    model.traverse((child) => {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+
+                            // --- ARREGLO DE PAREDES ---
+                            // Pinta las paredes del color del fondo para ocultar reflejos
+                            if (child.name.includes('Plane') && !child.name.includes('004') && !child.name.includes('Screen')) {
+                                child.material = new THREE.MeshStandardMaterial({ 
+                                    color: 0x0f172a, // Mismo color del fondo
+                                    roughness: 1,    // Mate
+                                    metalness: 0
+                                });
+                            }
+
+                            // A. PANTALLA
+                            if (child.name === 'Plane.004' || child.name === 'Plane004' || child.name.includes('Screen')) {
+                                child.material = videoMaterial;
+                            }
+
+                            // B. LUCES NEÓN
+                            if (child.material && (child.material.name.toLowerCase().includes('glow') || child.material.name.toLowerCase().includes('flow'))) {
+                                child.material.emissive = new THREE.Color(0x00ffff);
+                                child.material.emissiveIntensity = 2;
+                                child.material.toneMapped = false;
+                            }
+                        }
+                    });
+
+                    // Centrar
+                    const box = new THREE.Box3().setFromObject(model);
+                    const center = box.getCenter(new THREE.Vector3());
+                    model.position.sub(center);
+                    
+                    scene.add(model);
+                    onSceneLoaded();
+                },
+                (xhr) => {
+                    if(xhr.total > 0) {
+                        const percent = (xhr.loaded / xhr.total * 100).toFixed(0);
+                        loadingText.innerText = `Cargando 3D... ${percent}%`;
+                    }
+                },
+                (error) => {
+                    console.error("Error cargando GLB:", error);
+                    loadFallbackScene(); // Cargar cubos si falla el archivo
+                }
+            );
+        } catch (e) {
+            console.error("Error en loader:", e);
+            loadFallbackScene();
+        }
+
+        // --- 5. ANIMACIÓN ---
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            
+            // Animación suave de la luz neón (Respiración)
+            const time = Date.now() * 0.001;
+            neonLight.intensity = 5 + Math.sin(time * 2) * 1;
+            
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = container.offsetWidth / container.offsetHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.offsetWidth, container.offsetHeight);
+        });
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>
