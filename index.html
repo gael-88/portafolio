@@ -6,7 +6,6 @@
     <title>Portafolio 3D | Alex Dev</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Fuente bonita -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;800&display=swap" rel="stylesheet">
     
     <script type="importmap">
@@ -23,175 +22,200 @@
             background-color: #050505; 
             color: #e2e8f0; 
             font-family: 'Inter', sans-serif;
-            overflow: hidden; /* Evita scroll mientras carga */
+            overflow: hidden; 
         }
         
-        /* El Lienzo 3D va al fondo */
         #canvas-container { 
             width: 100%; height: 100vh; 
             position: fixed; top: 0; right: 0; 
             z-index: 0; 
         }
 
-        /* INTERFAZ PRINCIPAL (La Portada) */
+        /* INTERFAZ PRINCIPAL */
         #main-interface {
-            position: absolute;
-            top: 0; left: 0;
+            position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 20;
-            background: rgba(5, 5, 5, 0.95); /* Fondo oscuro casi opaco */
-            overflow-y: auto; /* Permite scrollear si el contenido es largo */
-            transition: transform 1s ease-in-out, opacity 1s ease-in-out;
+            background: rgba(5, 5, 5, 0.98);
+            overflow-y: auto; 
+            transition: transform 0.8s cubic-bezier(0.86, 0, 0.07, 1), opacity 0.8s ease-in-out;
         }
 
-        /* Clase para ocultar la interfaz suavemente */
         .interface-hidden {
             transform: translateY(-100%);
             opacity: 0;
             pointer-events: none;
         }
 
-        /* Etiqueta flotante para los objetos 3D */
+        /* ETIQUETA FLOTANTE */
         #object-label {
             position: absolute;
-            top: 50%; left: 50%;
             background: rgba(0, 0, 0, 0.8);
             color: #00ffff;
-            padding: 8px 16px;
-            border-radius: 8px;
-            border: 1px solid #00ffff;
-            font-weight: bold;
-            pointer-events: none; /* Click traspasa */
-            transform: translate(-50%, -150%);
-            opacity: 0;
-            transition: opacity 0.3s;
-            z-index: 10;
-            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            padding: 6px 12px;
+            border-radius: 4px;
+            border-left: 3px solid #00ffff;
+            font-size: 14px;
+            font-weight: 600;
+            pointer-events: none; 
+            opacity: 0; 
+            transition: opacity 0.15s ease;
+            z-index: 15;
+            transform: translate(15px, 15px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        /* Tarjetas de la galería */
+        /* TARJETAS */
         .ref-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
             transition: all 0.3s ease;
         }
         .ref-card:hover {
             border-color: #ef4444;
+            background: rgba(255,255,255,0.08);
             transform: translateY(-5px);
         }
 
-        /* Scrollbar bonita */
+        /* BOTONES */
+        .hud-btn {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .hud-btn:hover { background: rgba(220, 38, 38, 0.8); border-color: #ef4444; }
+
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #ef4444; }
     </style>
 </head>
 <body class="font-sans antialiased">
 
-    <!-- 1. ETIQUETA FLOTANTE (Aparece al dar click en 3D) -->
-    <div id="object-label">Objeto Seleccionado</div>
+    <div id="object-label">Objeto</div>
 
-    <!-- 2. INTERFAZ DE USUARIO (PORTADA Y REFERENCIAS) -->
+    <!-- AUDIO SECRETOS -->
+    <audio id="freddy-honk" src="https://www.myinstants.com/media/sounds/honk-sound.mp3"></audio>
+
+    <!-- INTERFAZ HTML -->
     <div id="main-interface">
-        <div class="container mx-auto px-6 py-12 max-w-5xl">
+        <div class="container mx-auto px-6 py-12 max-w-6xl">
             
-            <!-- ENCABEZADO / PERFIL -->
-            <header class="flex flex-col md:flex-row items-center gap-8 mb-16 animate-fade-in">
-                <!-- FOTO DE PERFIL (Cámbiala por tu foto real) -->
+            <header class="flex flex-col md:flex-row items-center gap-10 mb-16 pt-10 animate-fade-in">
                 <div class="relative group">
-                    <div class="w-40 h-40 rounded-full overflow-hidden border-4 border-red-600 shadow-[0_0_30px_rgba(220,38,38,0.6)]">
-                        <!-- Placeholder: Pon tu foto aquí en src="" -->
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" alt="Foto de Alex" class="w-full h-full object-cover">
-                    </div>
-                    <div class="absolute -bottom-2 -right-2 bg-slate-800 p-2 rounded-full border border-slate-600">
-                        <i data-lucide="code" class="text-red-400"></i>
+                    <div class="w-48 h-48 rounded-full overflow-hidden border-4 border-red-600 shadow-[0_0_40px_rgba(220,38,38,0.5)]">
+                        <img src="./assets/perfil.jpg" onerror="this.src='https://api.dicebear.com/9.x/micah/svg?seed=Alex'" alt="Foto de Alex" class="w-full h-full object-cover bg-slate-800">
                     </div>
                 </div>
-                
                 <div class="text-center md:text-left">
-                    <h1 class="text-6xl font-extrabold text-white mb-2 tracking-tighter">
-                        ALESS<span class="text-red-600">.PROYECT</span>
+                    <h1 class="text-7xl font-black text-white tracking-tighter mb-4">
+                        ALEX<span class="text-red-600">.DEV</span>
                     </h1>
-                    <p class="text-xl text-slate-400 max-w-lg">
-                        Bienvenido a mi portafolio interactivo. Soy desarrollador y artista 3D. 
-                        Aquí fusiono código con creatividad.
+                    <p class="text-xl text-slate-400 max-w-2xl font-light">
+                        Desarrollador Creativo & Artista 3D.
                     </p>
+                    <div class="flex gap-4 justify-center md:justify-start mt-6">
+                        <a href="#" class="p-2 bg-slate-800 rounded-full hover:bg-red-600 transition"><i data-lucide="github"></i></a>
+                        <a href="#" class="p-2 bg-slate-800 rounded-full hover:bg-blue-600 transition"><i data-lucide="linkedin"></i></a>
+                    </div>
                 </div>
             </header>
 
-            <!-- SECCIÓN DE REFERENCIAS BLENDER -->
             <section class="mb-16">
-                <div class="flex items-center gap-3 mb-8">
-                    <i data-lucide="box" class="text-red-500 w-8 h-8"></i>
-                    <h2 class="text-3xl font-bold">Assets Modelados</h2>
+                <div class="flex items-center gap-4 mb-6 border-b border-slate-800 pb-4">
+                    <div class="p-2 bg-red-900/20 rounded-lg"><i data-lucide="user" class="text-red-500 w-6 h-6"></i></div>
+                    <h2 class="text-3xl font-bold text-white">Sobre Mí</h2>
                 </div>
+                <p class="text-slate-300 leading-relaxed text-lg">
+                    Soy un apasionado de la tecnología con un enfoque en crear experiencias web inmersivas. 
+                    Este portafolio combina Blender y WebGL.
+                </p>
+            </section>
 
+            <section class="mb-16">
+                <div class="flex items-center gap-4 mb-6 border-b border-slate-800 pb-4">
+                    <div class="p-2 bg-red-900/20 rounded-lg"><i data-lucide="cpu" class="text-red-500 w-6 h-6"></i></div>
+                    <h2 class="text-3xl font-bold text-white">Habilidades</h2>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-slate-900 p-4 rounded-lg border border-slate-800 text-center hover:border-red-500 transition"><i data-lucide="box" class="mx-auto mb-2 text-orange-400"></i> Blender</div>
+                    <div class="bg-slate-900 p-4 rounded-lg border border-slate-800 text-center hover:border-yellow-500 transition"><i data-lucide="code-2" class="mx-auto mb-2 text-yellow-400"></i> JavaScript</div>
+                    <div class="bg-slate-900 p-4 rounded-lg border border-slate-800 text-center hover:border-blue-500 transition"><i data-lucide="layout" class="mx-auto mb-2 text-blue-400"></i> CSS</div>
+                    <div class="bg-slate-900 p-4 rounded-lg border border-slate-800 text-center hover:border-green-500 transition"><i data-lucide="globe" class="mx-auto mb-2 text-green-400"></i> Three.js</div>
+                </div>
+            </section>
+
+            <section class="mb-20">
+                <div class="flex items-center gap-4 mb-8 border-b border-slate-800 pb-4">
+                    <div class="p-2 bg-red-900/20 rounded-lg"><i data-lucide="layers" class="text-red-500 w-6 h-6"></i></div>
+                    <h2 class="text-3xl font-bold text-white">Proyectos & Assets</h2>
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- ITEM 1: Monitor -->
-                    <article class="ref-card p-4 rounded-xl">
-                        <div class="h-40 bg-slate-800 rounded-lg mb-4 overflow-hidden relative">
-                            <!-- FOTO: Pon aquí la captura de tu monitor en Blender -->
-                            <div class="absolute inset-0 flex items-center justify-center text-slate-600">
-                                <i data-lucide="monitor" class="w-12 h-12"></i>
-                                <span class="ml-2 text-sm">[Foto Monitor]</span>
-                            </div>
+                    <!-- PELUCHE -->
+                    <article class="ref-card p-4 rounded-xl cursor-pointer group">
+                        <div class="aspect-square bg-slate-800 rounded-lg mb-4 overflow-hidden relative border border-slate-700">
+                            <!-- FOTO DE TU PELUCHE AQUÍ -->
+                            <img src="./assets/freddy_blender.png" onerror="this.src='https://placehold.co/600x600?text=Foto+Peluche'" class="w-full h-full object-contain p-2 group-hover:scale-110 transition duration-500">
+                            <div class="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded font-bold">FNAF</div>
                         </div>
-                        <h3 class="text-xl font-bold text-white">Monitor Wide</h3>
-                        <p class="text-sm text-slate-400 mt-2">Modelado hard-surface con texturas emisivas para la pantalla.</p>
+                        <h3 class="text-xl font-bold text-white group-hover:text-red-500 transition">Peluche Freddy</h3>
+                        <p class="text-sm text-slate-400 mt-2">Modelado orgánico low-poly.</p>
+                    </article>
+                    
+                    <!-- SETUP -->
+                    <article class="ref-card p-4 rounded-xl cursor-pointer group">
+                        <div class="aspect-square bg-slate-800 rounded-lg mb-4 overflow-hidden relative border border-slate-700">
+                            <!-- FOTO DE TU ESCRITORIO AQUÍ -->
+                            <img src="./assets/escritorio_blender.png" onerror="this.src='https://placehold.co/600x600?text=Foto+Escritorio'" class="w-full h-full object-cover group-hover:scale-110 transition duration-500 opacity-80 group-hover:opacity-100">
+                        </div>
+                        <h3 class="text-xl font-bold text-white group-hover:text-red-500 transition">Setup Hard Surface</h3>
+                        <p class="text-sm text-slate-400 mt-2">Escritorio modelado en Blender.</p>
                     </article>
 
-                    <!-- ITEM 2: Silla / Muebles -->
-                    <article class="ref-card p-4 rounded-xl">
-                        <div class="h-40 bg-slate-800 rounded-lg mb-4 overflow-hidden relative">
-                             <!-- FOTO: Pon aquí la captura de tu silla -->
-                             <div class="absolute inset-0 flex items-center justify-center text-slate-600">
-                                <i data-lucide="armchair" class="w-12 h-12"></i>
-                                <span class="ml-2 text-sm">[Foto Silla]</span>
-                            </div>
+                    <!-- POSTERS -->
+                    <article class="ref-card p-4 rounded-xl cursor-pointer group">
+                        <div class="aspect-square bg-slate-800 rounded-lg mb-4 overflow-hidden relative border border-slate-700">
+                            <!-- FOTO DE TUS POSTERS AQUÍ -->
+                            <img src="./assets/posters_blender.png" onerror="this.src='https://placehold.co/600x600?text=Foto+Posters'" class="w-full h-full object-cover group-hover:scale-110 transition duration-500 opacity-80 group-hover:opacity-100">
                         </div>
-                        <h3 class="text-xl font-bold text-white">Mobiliario</h3>
-                        <p class="text-sm text-slate-400 mt-2">Escritorio y silla ergonómica con bake de sombras en Cycles.</p>
-                    </article>
-
-                    <!-- ITEM 3: Posters / Decoración -->
-                    <article class="ref-card p-4 rounded-xl">
-                        <div class="h-40 bg-slate-800 rounded-lg mb-4 overflow-hidden relative">
-                             <!-- FOTO: Pon aquí la captura de los posters -->
-                             <div class="absolute inset-0 flex items-center justify-center text-slate-600">
-                                <i data-lucide="image" class="w-12 h-12"></i>
-                                <span class="ml-2 text-sm">[Foto Posters]</span>
-                            </div>
-                        </div>
-                        <h3 class="text-xl font-bold text-white">Decoración FNAF</h3>
-                        <p class="text-sm text-slate-400 mt-2">Posters texturizados usando mapeo UV y nodos de imagen.</p>
+                        <h3 class="text-xl font-bold text-white group-hover:text-red-500 transition">Texturas UV</h3>
+                        <p class="text-sm text-slate-400 mt-2">Mapeo de texturas personalizadas.</p>
                     </article>
                 </div>
             </section>
 
-            <!-- BOTÓN DE ACCIÓN PRINCIPAL -->
-            <div class="text-center pb-12">
-                <button id="enter-btn" class="group relative px-10 py-4 bg-red-600 hover:bg-red-700 text-white font-bold text-xl rounded-full shadow-[0_0_40px_rgba(220,38,38,0.4)] transition-all transform hover:scale-105 overflow-hidden">
-                    <span class="relative z-10 flex items-center gap-3">
-                        EXPLORAR MODELO 3D <i data-lucide="arrow-right" class="group-hover:translate-x-1 transition"></i>
+            <div class="text-center pb-24">
+                <p id="loading-status" class="mb-6 text-sm font-mono text-slate-500 animate-pulse">CARGANDO RECURSOS 3D...</p>
+                <button id="enter-btn" disabled class="group relative inline-flex items-center justify-center px-16 py-6 text-lg font-bold text-white transition-all duration-200 bg-red-600 font-pj rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-700 hover:scale-105 shadow-[0_0_60px_rgba(220,38,38,0.4)]">
+                    <span class="relative flex items-center gap-3 text-xl tracking-wide">
+                        EXPLORAR MODELO 3D <i data-lucide="play-circle"></i>
                     </span>
-                    <div class="absolute inset-0 bg-gradient-to-r from-orange-600 to-red-800 opacity-0 group-hover:opacity-100 transition duration-500"></div>
                 </button>
-                <p id="loading-status" class="mt-4 text-sm text-slate-500 animate-pulse">Cargando entorno 3D...</p>
             </div>
         </div>
     </div>
 
-    <!-- UI IN-GAME (Botón para volver) -->
-    <button id="back-btn" class="fixed top-6 left-6 z-10 px-4 py-2 bg-slate-900/80 border border-slate-700 rounded-lg text-white text-sm hidden hover:bg-red-900/80 transition">
-        <i data-lucide="arrow-left" class="inline w-4 h-4 mr-1"></i> Volver al Menú
-    </button>
+    <!-- HUD 3D -->
+    <div id="hud-controls" class="fixed top-6 left-6 z-10 hidden">
+        <button id="back-btn" class="hud-btn">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i> VOLVER AL MENÚ
+        </button>
+        <!-- Mensaje de ayuda -->
+        <div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 text-white/50 text-sm bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm pointer-events-none text-center">
+            Clic en la pantalla: Video | Clic en el poster de Freddy: Sorpresa
+        </div>
+    </div>
 
-    <!-- CONTENEDOR 3D -->
     <div id="canvas-container"></div>
 
-    <!-- VIDEO OCULTO -->
-    <video id="monitor-video" loop muted playsinline preload="auto" crossOrigin="anonymous" style="display:none">
+    <video id="monitor-video" loop playsinline preload="auto" crossOrigin="anonymous" style="display:none">
         <source src="./assets/video.mp4" type="video/mp4">
         <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
     </video>
@@ -202,29 +226,35 @@
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
         import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'; 
 
-        // --- VARIABLES GLOBALES DE INTERACCIÓN ---
-        let scene, camera, renderer, controls;
-        let model = null;
+        let scene, camera, renderer, controls, model;
+        let particlesMesh;
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
         const label = document.getElementById('object-label');
-
-        // ELEMENTOS DOM
         const uiLayer = document.getElementById('main-interface');
         const enterBtn = document.getElementById('enter-btn');
+        const hudControls = document.getElementById('hud-controls');
         const backBtn = document.getElementById('back-btn');
         const loadingStatus = document.getElementById('loading-status');
+        const honkSound = document.getElementById('freddy-honk');
+        
+        // VIDEO
+        const video = document.getElementById('monitor-video');
+        video.pause(); 
+        const videoTexture = new THREE.VideoTexture(video);
+        videoTexture.minFilter = THREE.LinearFilter;
+        videoTexture.format = THREE.RGBAFormat;
+        videoTexture.flipY = false; 
+        const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTexture, side: THREE.FrontSide, toneMapped: false });
 
-        // 1. INICIALIZACIÓN BÁSICA
+        // INICIALIZACIÓN
         const container = document.getElementById('canvas-container');
         scene = new THREE.Scene();
         scene.background = new THREE.Color(0x050505); 
 
+        // CÁMARA (Posición fija solicitada)
         camera = new THREE.PerspectiveCamera(45, container.offsetWidth / container.offsetHeight, 0.1, 1000);
-        
-        // --- CÁMARA RESTAURADA (La vista que te gustó) ---
-        // X=4.5 (Derecha), Y=1.2 (Baja), Z=7.0 (Distancia)
-        camera.position.set(70, -15, -2.5); 
+        camera.position.set(70, -15,-2.5); 
 
         renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
         renderer.setSize(container.offsetWidth, container.offsetHeight);
@@ -238,7 +268,6 @@
         const pmremGenerator = new THREE.PMREMGenerator(renderer);
         scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
 
-        // LUCES
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
         scene.add(ambientLight);
         const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -246,163 +275,165 @@
         dirLight.castShadow = true;
         scene.add(dirLight);
 
-        // CONTROLES
         controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
         controls.enablePan = false; 
         controls.minDistance = 2;
         controls.maxDistance = 12;
         controls.maxPolarAngle = Math.PI / 2 - 0.05; 
-        
-        // Objetivo restaurado (mirar al centro del escritorio)
-        controls.target.set(-2, -2, 0); 
+        controls.target.set(-2, -2, 0);
 
-        // TEXTURAS (Video y Ajedrez)
-        const video = document.getElementById('monitor-video');
-        const videoTexture = new THREE.VideoTexture(video);
-        videoTexture.minFilter = THREE.LinearFilter;
-        videoTexture.magFilter = THREE.LinearFilter;
-        videoTexture.format = THREE.RGBAFormat;
-        // NO INVERTIR VIDEO (flipY false es el estándar para GLTF)
-        videoTexture.flipY = false; 
-        
-        const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTexture, side: THREE.FrontSide, toneMapped: false });
-
-        function createCheckerTexture() {
-            const size = 512;
-            const canvas = document.createElement('canvas');
-            canvas.width = size;
-            canvas.height = size;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, size, size);
-            ctx.fillStyle = '#1a1a1a';
-            const squares = 4; const step = size / squares;
-            for (let i = 0; i < squares; i++) {
-                for (let j = 0; j < squares; j++) {
-                    if ((i + j) % 2 === 0) ctx.fillRect(i * step, j * step, step, step);
-                }
-            }
-            const tex = new THREE.CanvasTexture(canvas);
-            tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
-            tex.repeat.set(8, 8); tex.colorSpace = THREE.SRGBColorSpace;
-            return tex;
+        // PARTÍCULAS
+        function createParticles() {
+            const count = 200;
+            const geom = new THREE.BufferGeometry();
+            const pos = new Float32Array(count * 3);
+            for(let i=0; i<count*3; i++) pos[i] = (Math.random()-0.5)*15;
+            geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            const mat = new THREE.PointsMaterial({ size: 0.04, color: 0x4ade80, transparent: true, opacity: 0.4 });
+            particlesMesh = new THREE.Points(geom, mat);
+            scene.add(particlesMesh);
         }
-        const checkerMaterial = new THREE.MeshStandardMaterial({ map: createCheckerTexture(), roughness: 0.2 });
+        createParticles();
 
-        // --- LÓGICA DE CARGA Y TRANSICIÓN ---
+        // CARGA GLB
         let isModelLoaded = false;
-
         const loader = new GLTFLoader();
-        loader.load('assets/setup.glb', 
-            (gltf) => {
-                model = gltf.scene;
-                model.traverse((child) => {
-                    if (child.isMesh) {
-                        child.castShadow = true; child.receiveShadow = true;
-                        
-                        // Materiales lógicos
-                        if (child.name === 'Plane') child.material = checkerMaterial;
-                        
-                        if (child.name.includes('Screen') || (child.material && child.material.name.includes('Screen'))) {
-                            child.material = videoMaterial;
-                        }
-                        
-                        if (child.material && (child.material.name.toLowerCase().includes('glow'))) {
-                            child.material.emissive = child.material.color;
-                            child.material.emissiveIntensity = 2;
-                            child.material.toneMapped = false;
-                        }
-                        // Guardar datos para interacción
-                        child.userData.isInteractable = true; 
+        loader.load('assets/setup.glb', (gltf) => {
+            model = gltf.scene;
+            model.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = true; child.receiveShadow = true;
+                    
+                    // DETECCIÓN DE PANTALLA
+                    if (child.name.includes('Screen') || (child.material && child.material.name.includes('Screen'))) {
+                        child.material = videoMaterial;
+                        child.name = "Pantalla Interactiva"; 
+                        child.userData.isScreen = true;
                     }
-                });
-                // Centrar
-                const box = new THREE.Box3().setFromObject(model);
-                const center = box.getCenter(new THREE.Vector3());
-                model.position.sub(center);
-                scene.add(model);
+                    
+                    if (child.material && child.material.name.toLowerCase().includes('glow')) {
+                        child.material.emissive = child.material.color;
+                        child.material.emissiveIntensity = 2;
+                        child.material.toneMapped = false;
+                    }
+                    
+                    // DETECCIÓN DEL PÓSTER
+                    // Busca materiales o nombres que digan "poster"
+                    if (child.material && (child.material.name.toLowerCase().includes('poster') || child.name.toLowerCase().includes('poster'))) {
+                        child.userData.isFreddyPoster = true;
+                        child.name = "Póster Freddy";
+                    }
+                }
+            });
+            const box = new THREE.Box3().setFromObject(model);
+            const center = box.getCenter(new THREE.Vector3());
+            model.position.sub(center);
+            scene.add(model);
 
-                // Habilitar botón
-                isModelLoaded = true;
-                loadingStatus.innerText = "Sistema Listo. Esperando usuario.";
-                loadingStatus.classList.remove('animate-pulse');
-                loadingStatus.classList.add('text-green-500');
-                enterBtn.removeAttribute('disabled');
-            },
-            undefined,
-            (error) => {
-                console.error(error);
-                loadingStatus.innerText = "Error cargando 3D. Verifica los archivos.";
-                loadingStatus.classList.add('text-red-500');
-            }
-        );
+            isModelLoaded = true;
+            loadingStatus.innerHTML = "SISTEMA LISTO <span class='text-green-500'>●</span>";
+            loadingStatus.classList.remove('animate-pulse');
+            enterBtn.removeAttribute('disabled');
+            enterBtn.classList.add('animate-bounce');
+        }, undefined, (e) => {
+            console.error(e);
+            loadingStatus.innerText = "Error cargando modelo";
+            loadingStatus.classList.add('text-red-500');
+        });
 
-        // --- EVENTOS DE INTERFAZ ---
-
-        // 1. Botón ENTRAR
+        // EVENTOS INTERFAZ
         enterBtn.addEventListener('click', () => {
             if (!isModelLoaded) return;
-            
-            // Reproducir video
-            video.play().catch(e => console.log("Interacción necesaria para audio"));
-            
-            // Transición visual
             uiLayer.classList.add('interface-hidden');
-            backBtn.classList.remove('hidden');
+            hudControls.classList.remove('hidden');
         });
 
-        // 2. Botón VOLVER
         backBtn.addEventListener('click', () => {
             uiLayer.classList.remove('interface-hidden');
-            backBtn.classList.add('hidden');
+            hudControls.classList.add('hidden');
         });
 
-        // 3. INTERACCIÓN MOUSE (RAYCASTER)
-        window.addEventListener('click', (event) => {
-            // Si la interfaz está visible, no detectar clicks 3D
+        // HOVER
+        window.addEventListener('mousemove', (event) => {
             if (!uiLayer.classList.contains('interface-hidden')) return;
 
-            // Calcular posición mouse normalizada (-1 a +1)
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
             raycaster.setFromCamera(mouse, camera);
-
-            // Buscar intersecciones
             const intersects = raycaster.intersectObjects(scene.children, true);
 
             if (intersects.length > 0) {
-                const object = intersects[0].object;
-                
-                // Mostrar etiqueta con el nombre del objeto
-                // Limpiamos el nombre (quitamos extensiones o números raros de Blender)
-                let cleanName = object.name.replace(/_/g, ' ').replace(/[0-9]/g, '');
-                if(cleanName === "Plane") cleanName = "Piso / Pared";
-                
-                label.innerText = cleanName;
-                label.style.opacity = '1';
-                label.style.left = event.clientX + 'px';
-                label.style.top = event.clientY + 'px';
-
-                // Efecto visual (Flash de color momentáneo)
-                const originalHex = object.material.emissive ? object.material.emissive.getHex() : 0x000000;
-                if (object.material.emissive) {
-                    object.material.emissive.setHex(0xff0000); // Rojo momentáneo
-                    setTimeout(() => {
-                        object.material.emissive.setHex(originalHex);
-                    }, 200);
+                const obj = intersects[0].object;
+                if (obj.isMesh) {
+                    let name = obj.name.replace(/_/g, ' ').replace(/[0-9]/g, '');
+                    if(name === 'Plane') name = 'Suelo';
+                    
+                    label.innerText = name;
+                    label.style.opacity = '1';
+                    label.style.left = (event.clientX + 15) + 'px';
+                    label.style.top = (event.clientY + 15) + 'px';
+                    
+                    const isInteractive = obj.userData.isScreen || obj.userData.isFreddyPoster;
+                    document.body.style.cursor = isInteractive ? 'pointer' : 'default';
+                    
+                    if (obj.userData.isFreddyPoster) {
+                        label.style.color = '#ef4444'; 
+                        label.style.borderColor = '#ef4444';
+                    } else {
+                        label.style.color = '#00ffff';
+                        label.style.borderColor = '#00ffff';
+                    }
                 }
-
-                // Ocultar etiqueta después de 2 segundos
-                setTimeout(() => { label.style.opacity = '0'; }, 2000);
+            } else {
+                label.style.opacity = '0';
+                document.body.style.cursor = 'default';
             }
         });
 
+        // CLIC (INTERACCIONES)
+        window.addEventListener('click', (event) => {
+            if (!uiLayer.classList.contains('interface-hidden')) return;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(scene.children, true);
+
+            if (intersects.length > 0) {
+                const obj = intersects[0].object;
+
+                // 1. PANTALLA -> VIDEO
+                if (obj.userData.isScreen) {
+                    if (video.paused) {
+                        video.play();
+                        obj.material.emissiveIntensity = 1; 
+                    } else {
+                        video.pause();
+                    }
+                }
+                
+                // 2. PÓSTER FREDDY -> HONK
+                if (obj.userData.isFreddyPoster) {
+                    honkSound.currentTime = 0; 
+                    honkSound.volume = 0.5;
+                    honkSound.play().catch(e => console.log("Error sonido"));
+                    
+                    const oldHex = obj.material.emissive.getHex();
+                    obj.material.emissive.setHex(0xffffff); 
+                    setTimeout(() => { 
+                        if(obj.material) obj.material.emissive.setHex(oldHex); 
+                    }, 100);
+                }
+            }
+        });
 
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
+            if (particlesMesh) {
+                particlesMesh.rotation.y += 0.001;
+                particlesMesh.position.y = Math.sin(Date.now() * 0.0005) * 0.2;
+            }
             renderer.render(scene, camera);
         }
         animate();
